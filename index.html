@@ -1,203 +1,28 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
-  <title>三角線 リアルタイムナビ</title>
-  <link rel="stylesheet" href="./styles.css?v=25" />
-</head>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#ffffff"><title>三角線 リアルタイムナビ</title><link rel="stylesheet" href="./styles.css?v=26"></head>
 <body class="splash-active">
-  <div id="splashScreen" class="splash-screen" aria-label="アプリ起動画面">
-    <div class="splash-inner">
-      <img src="./assets/splash-logo.png" alt="三角線 リアルタイムナビ ロゴ" class="splash-logo" />
-      <p class="splash-title">三角線 リアルタイムナビ</p>
-      <p class="splash-subtitle">沿線利用者の「いつもの駅」から</p>
-    </div>
-  </div>
+<div id="splashScreen" class="splash-screen"><div class="splash-inner"><img src="./assets/splash-logo.png" class="splash-logo" alt="三角線 リアルタイムナビ"><p class="splash-title">三角線 リアルタイムナビ</p><p class="splash-subtitle">駅を選んで、いま走っている列車を見る</p></div></div>
+<div class="app-shell">
+<header class="app-header"><div class="brand"><span class="jr-logo-crop"><img src="./assets/jr-kyushu-logo.png" alt=""></span><div><p class="eyebrow">三角線 / Prototype</p><h1>三角線 リアルタイムナビ</h1></div></div><span class="prototype-chip">試作</span><button class="font-btn" id="fontBtn" type="button">文字：標準</button></header>
+<main class="app-main">
+<section class="station-gate" id="stationGate"><div class="station-gate-scroll">
+<section class="operation-banner"><div class="operation-dot"></div><div><span class="kicker">OPERATION STATUS</span><strong>三角線　平常運転</strong><p>現在、大きな遅れや運休の情報はありません。</p></div></section>
+<div class="gate-hero"><span class="kicker">SELECT YOUR STATION</span><h2>利用する駅を選んでください</h2><p>選んだ駅を起点に、上下線の列車位置を一つの画面で確認できます。</p></div>
+<div class="fixed-time-card"><span>プロトタイプ現在時刻</span><strong>10:30</strong><small>※今回の検証では時刻を10:30に固定しています。</small></div>
+<section class="station-picker-card"><div class="picker-heading"><div><span class="kicker">MISUMI LINE</span><h3>三角線 13駅</h3></div><span class="tap-note">駅をタップ</span></div><div class="station-grid" id="stationGrid"></div></section>
+<p class="data-note">※ 列車位置はJR九州から提供されたサンプル2件（8031D・527D）を使用しています。</p></div></section>
 
-  <div class="app-shell">
-    <header class="app-header">
-      <div class="brand">
-        <span class="jr-logo-crop" aria-hidden="true">
-          <img src="./assets/jr-kyushu-logo.png" alt="" />
-        </span>
-        <div>
-          <p class="eyebrow">三角線 / Prototype</p>
-          <h1>三角線 リアルタイムナビ</h1>
-        </div>
-      </div>
-      <span class="prototype-chip">試作</span>
-      <button class="font-btn" id="fontBtn" type="button" aria-label="文字サイズを変更">文字：標準</button>
-    </header>
+<section class="view" data-view="0" id="viewPosition"><div class="view-scroll position-bg">
+<div class="station-context sticky-context"><div><span class="kicker">SELECTED STATION</span><strong id="selectedStationLabel">—</strong></div><button id="changeStationBtn" type="button">駅を変更</button></div>
+<section class="position-info-card"><div><span class="kicker">PROTOTYPE TIME</span><strong>10:30</strong></div><div class="position-legend"><span><i class="legend-up"></i> 左：上り（熊本方面）</span><span><i class="legend-down"></i> 右：下り（三角方面）</span></div></section>
+<section class="route-panel"><div class="section-heading"><div><span class="kicker">TRAIN POSITION</span><h2>現在の列車位置</h2></div><span class="sample-badge">10:28取得</span></div><p class="route-help">中央の路線を基準に、左へ上り、右へ下りの列車を表示します。列車をタップすると、終着駅までの時刻表を確認できます。</p><div id="dualRoute" class="dual-route"></div></section>
+</div></section>
 
-    <main class="app-main">
-      <!-- 初回：駅選択 -->
-      <section class="station-gate" id="stationGate">
-        <div class="station-gate-scroll">
-          <div class="gate-hero">
-            <span class="kicker">START FROM YOUR STATION</span>
-            <h2>利用する駅を選んでください</h2>
-            <p>三角線を日頃利用する方が、必要な情報へすぐ入れることを想定した入口です。</p>
-          </div>
+<section class="view" data-view="1" id="viewMap"><div class="view-scroll map-bg"><div class="page-title"><span class="kicker">MAP</span><h2>列車位置を地理的に確認</h2><p>提供された緯度経度を軽量路線図上に表示します。</p></div><div id="map" class="map-card"></div></div></section>
 
-          <div class="fixed-time-card">
-            <span>プロトタイプ現在時刻</span>
-            <strong>10:30</strong>
-            <small>※今回の検証では時刻を10:30に固定しています。</small>
-          </div>
-
-          <section class="station-picker-card">
-            <div class="picker-heading">
-              <div>
-                <span class="kicker">MISUMI LINE</span>
-                <h3>三角線 13駅</h3>
-              </div>
-              <span class="tap-note">1タップで表示</span>
-            </div>
-            <div class="station-grid" id="stationGrid"></div>
-          </section>
-
-          <p class="data-note">※ 列車情報はJR九州から提供されたサンプル2件（8031D・527D）のみを使用しています。未提供の時刻は補完していません。</p>
-        </div>
-      </section>
-
-      <!-- 1: 運行状況 -->
-      <section class="view" data-view="0" id="viewStatus">
-        <div class="view-scroll status-bg">
-          <div class="station-context sticky-context">
-            <div>
-              <span class="kicker">SELECTED STATION</span>
-              <strong id="selectedStationLabel">—</strong>
-            </div>
-            <button type="button" id="changeStationBtn">駅を変更</button>
-          </div>
-
-          <section class="time-status-card">
-            <div>
-              <span class="kicker">PROTOTYPE TIME</span>
-              <strong class="fixed-clock">10:30</strong>
-            </div>
-            <div class="freshness">
-              <span>データ取得</span>
-              <strong>10:28</strong>
-              <small>2分前</small>
-            </div>
-          </section>
-
-          <section class="status-summary-card">
-            <div class="section-heading">
-              <div>
-                <span class="kicker">OPERATION STATUS</span>
-                <h2>運行状況</h2>
-              </div>
-              <span class="sample-badge">サンプル2件</span>
-            </div>
-            <p class="summary-main">上下線を切り替えず、受領した列車情報を一括表示します。</p>
-            <p class="summary-sub">今回受領している2件はいずれも <b>direction＝下り</b> です。上り列車の表示は、データ受領後に同じ画面へ追加する想定です。</p>
-          </section>
-
-          <section class="selected-relevance-card" id="selectedRelevance"></section>
-
-          <section class="train-data-panel">
-            <div class="section-heading">
-              <div>
-                <span class="kicker">RECEIVED TRAIN DATA</span>
-                <h2>現在確認できる列車</h2>
-              </div>
-            </div>
-            <div id="statusTrainList" class="status-train-list"></div>
-          </section>
-        </div>
-      </section>
-
-      <!-- 2: 列車位置 -->
-      <section class="view" data-view="1" id="viewPosition">
-        <div class="view-scroll position-bg">
-          <div class="station-context">
-            <div>
-              <span class="kicker">SELECTED STATION</span>
-              <strong id="positionStationLabel">—</strong>
-            </div>
-            <span class="fixed-mini-clock">10:30</span>
-          </div>
-
-          <section class="route-panel">
-            <div class="section-heading route-heading">
-              <div>
-                <span class="kicker">TRAIN POSITION</span>
-                <h2>上下線一括・列車位置</h2>
-              </div>
-              <span class="sample-badge">10:28取得</span>
-            </div>
-            <p class="route-help">方向切替は行わず、受領した列車を同じ路線上に表示します。駅をタップすると、その駅とサンプル列車との関係を確認できます。</p>
-            <div id="verticalRoute" class="vertical-route"></div>
-          </section>
-        </div>
-      </section>
-
-      <!-- 3: 地図 -->
-      <section class="view" data-view="2" id="viewMap">
-        <div class="view-scroll map-bg">
-          <div class="page-title">
-            <span class="kicker">MAP</span>
-            <h2>列車位置を地理的に確認</h2>
-            <p>提供された緯度経度を、軽量化した三角線の線形上に表示します。</p>
-          </div>
-          <div id="map" class="map-card"></div>
-          <p class="data-note">8031D：32.71283416, 130.6727855 ／ 527D：32.60767861, 130.4699545</p>
-        </div>
-      </section>
-
-      <!-- 4: 時刻 -->
-      <section class="view" data-view="3" id="viewTimeData">
-        <div class="view-scroll timetable-bg">
-          <div class="page-title">
-            <span class="kicker">TIME DATA</span>
-            <h2>今回確認できる時刻情報</h2>
-            <p>未提供の発着時刻は表示せず、受領した時刻情報だけを示します。</p>
-          </div>
-
-          <section class="time-data-panel">
-            <div class="fixed-time-large">
-              <span>画面上の現在時刻</span>
-              <strong>10:30</strong>
-              <small>プロトタイプ固定</small>
-            </div>
-            <div id="timeDataList" class="time-data-list"></div>
-          </section>
-
-          <div class="unavailable-card">
-            <strong>駅別時刻表について</strong>
-            <p>今回共有いただいたデータには、各駅の発車・到着時刻表は含まれていません。そのため、本版では時刻を推測・補完して表示しません。</p>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <nav class="bottom-nav" id="bottomNav" aria-label="画面切替" hidden>
-      <button type="button" class="nav-btn active" data-target="0"><span class="nav-icon">●</span><span>運行状況</span></button>
-      <button type="button" class="nav-btn" data-target="1"><span class="nav-icon">🚃</span><span>列車位置</span></button>
-      <button type="button" class="nav-btn" data-target="2"><span class="nav-icon">⌖</span><span>地図</span></button>
-      <button type="button" class="nav-btn" data-target="3"><span class="nav-icon">◷</span><span>時刻情報</span></button>
-    </nav>
-  </div>
-
-  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
-  <section class="bottom-sheet" id="bottomSheet" aria-modal="true" role="dialog" aria-labelledby="sheetTitle" hidden>
-    <div class="sheet-handle" aria-hidden="true"></div>
-    <div class="sheet-head">
-      <div>
-        <span class="kicker" id="sheetKicker">DETAIL</span>
-        <h2 id="sheetTitle">詳細</h2>
-      </div>
-      <button type="button" class="sheet-close" id="sheetClose" aria-label="閉じる">×</button>
-    </div>
-    <div id="sheetBody" class="sheet-body"></div>
-  </section>
-
-  <script src="./mock-data.js?v=25"></script>
-  <script src="./route-geometry.js?v=25"></script>
-  <script src="./app.js?v=25"></script>
-</body>
-</html>
+<section class="view" data-view="2" id="viewTime"><div class="view-scroll timetable-bg"><div class="page-title"><span class="kicker">TIMETABLE REFERENCE</span><h2>列車時刻の参照情報</h2><p>列車をタップした際の時刻表示に使用している時刻表情報です。</p></div><div id="timeReference" class="time-reference"></div><p class="data-note">※ 8031DはJR九州駅別時刻表の「A列車で行こう1号」の時刻、527DはJR九州の列車詳細時刻を参照しています。</p></div></section>
+</main>
+<nav class="bottom-nav" id="bottomNav" hidden><button class="nav-btn active" data-target="0"><span class="nav-icon">🚃</span><span>列車位置</span></button><button class="nav-btn" data-target="1"><span class="nav-icon">⌖</span><span>地図</span></button><button class="nav-btn" data-target="2"><span class="nav-icon">◷</span><span>時刻情報</span></button><button class="nav-btn" id="navStation"><span class="nav-icon">◎</span><span>駅選択</span></button></nav>
+</div>
+<div class="sheet-backdrop" id="sheetBackdrop" hidden></div><section class="bottom-sheet" id="bottomSheet" hidden><div class="sheet-handle"></div><div class="sheet-head"><div><span class="kicker">TRAIN</span><h2 id="sheetTitle">詳細</h2></div><button class="sheet-close" id="sheetClose">×</button></div><div id="sheetBody" class="sheet-body"></div></section>
+<script src="./mock-data.js?v=26"></script><script src="./route-geometry.js?v=26"></script><script src="./app.js?v=26"></script></body></html>
