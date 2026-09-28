@@ -49,3 +49,50 @@
   font-size:calc(9px * var(--font-scale));
   line-height:1.5;
 }
+
+
+/* v28: 列車位置アイコンをアニメーションGIF化 */
+.track-train{
+  min-width: 104px;
+  max-width: 138px;
+  padding: 5px 7px;
+  grid-template-columns: 46px 1fr;
+  column-gap: 6px;
+  align-items: center;
+  overflow: visible;
+}
+.train-gif{
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+.train-chip-copy{
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+.train-chip-copy strong{
+  font-size: calc(12px * var(--font-scale));
+  line-height: 1.1;
+}
+.train-chip-copy small{
+  font-size: calc(8px * var(--font-scale));
+  color: #667c8b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-train.up{
+  border-right: 4px solid #4d8ec2;
+  border-left: 1px solid #d8e5ed;
+}
+.track-train.down{
+  border-left: 4px solid #f2a93b;
+  border-right: 1px solid #d8e5ed;
+}
+.track-train.waiting .train-gif{
+  opacity: .95;
+}
