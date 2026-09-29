@@ -39,8 +39,7 @@ function renderStationGrid(){
 
 function selectStation(name){
   selectedStation=name;
-  document.getElementById("selectedStationLabel").textContent=`${name}駅`;
-  bottomNav.hidden=false;
+bottomNav.hidden=false;
   stationFab.hidden=false;
   renderDualRoute();
   setView(0);
@@ -100,11 +99,7 @@ function trainChip(t){
 
 function renderDualRoute(){
   const e=document.getElementById("dualRoute");
-  let h=`<div class="route-columns-head">
-    <span>上り<br><b>熊本方面</b></span>
-    <span>駅</span>
-    <span>下り<br><b>三角方面</b></span>
-  </div>`;
+  let h="";
 
   stations.forEach((s,i)=>{
     const at=loadedTrains.filter(t=>{

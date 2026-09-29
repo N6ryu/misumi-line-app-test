@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <title>三角線 リアルタイムナビ</title>
-  <link rel="stylesheet" href="./styles.css?v=29">
+  <link rel="stylesheet" href="./styles.css?v=30">
 </head>
 <body class="splash-active">
   <div id="splashScreen" class="splash-screen">
@@ -64,14 +64,7 @@
 
       <section class="view" data-view="0" id="viewPosition">
         <div class="view-scroll position-bg" id="positionScroller">
-          <div class="station-context sticky-context">
-            <div>
-              <span class="kicker">SELECTED STATION</span>
-              <strong id="selectedStationLabel">—</strong>
-            </div>
-          </div>
-
-          <section class="position-info-card legend-only">
+<section class="position-info-card legend-only">
             <div class="position-legend">
               <span><i class="legend-up"></i> 左：上り（熊本方面）</span>
               <span><i class="legend-down"></i> 右：下り（三角方面）</span>
@@ -79,14 +72,21 @@
           </section>
 
           <section class="route-panel">
-            <div class="section-heading">
-              <div>
-                <span class="kicker">TRAIN POSITION</span>
-                <h2>現在の列車位置</h2>
+            <div class="route-sticky-head">
+              <div class="section-heading">
+                <div>
+                  <span class="kicker">TRAIN POSITION</span>
+                  <h2>現在の列車位置</h2>
+                </div>
+                <span class="sample-badge">10:28取得</span>
               </div>
-              <span class="sample-badge">10:28取得</span>
+              <p class="route-help">中央の路線を基準に、左へ上り、右へ下りの列車を表示します。駅を選ぶと、その駅が見える位置まで自動で移動します。</p>
+              <div class="route-columns-head">
+                <span>上り<br><b>熊本方面</b></span>
+                <span>駅</span>
+                <span>下り<br><b>三角方面</b></span>
+              </div>
             </div>
-            <p class="route-help">中央の路線を基準に、左へ上り、右へ下りの列車を表示します。駅を選ぶと、その駅が見える位置まで自動で移動します。</p>
             <div id="dualRoute" class="dual-route"></div>
           </section>
         </div>
@@ -136,8 +136,8 @@
     <div id="sheetBody" class="sheet-body"></div>
   </section>
 
-  <script src="./mock-data.js?v=29"></script>
-  <script src="./route-geometry.js?v=29"></script>
-  <script src="./app.js?v=29"></script>
+  <script src="./mock-data.js?v=30"></script>
+  <script src="./route-geometry.js?v=30"></script>
+  <script src="./app.js?v=30"></script>
 </body>
 </html>
