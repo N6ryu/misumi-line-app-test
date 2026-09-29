@@ -1,4 +1,6 @@
 let selectedStation=null,loadedTrains=[],currentView=0;
+let leafletMap=null;
+let leafletTrainMarkers=[];
 
 const gate=document.getElementById("stationGate");
 const views=[...document.querySelectorAll(".view")];
@@ -16,7 +18,13 @@ function setView(i){
   views.forEach((v,n)=>v.classList.toggle("active",n===currentView));
   navButtons.forEach((b,n)=>b.classList.toggle("active",n===currentView));
   if(currentView===0&&selectedStation)setTimeout(()=>scrollToSelectedStation(false),80);
-  if(currentView===1)setTimeout(renderMapOverlay,100);
+  if(currentView===1){
+    setTimeout(()=>{
+      initLeafletMap();
+      if(leafletMap) leafletMap.invalidateSize();
+      renderLeafletTrains();
+    },120);
+  }
   if(currentView===2){
     if(selectedStation) setTimetableStation(selectedStation);
     renderTimetable();
@@ -140,31 +148,82 @@ function openTrainDetail(id){
     <p class="source-note">${t.timetableNote}</p>`);
 }
 
-// OpenStreetMap iframe overlay (bbox: west,south,east,north)
-const MAP_BBOX={west:130.44,south:32.59,east:130.71,north:32.81};
-function mercY(lat){
-  const rad=lat*Math.PI/180;
-  return Math.log(Math.tan(Math.PI/4+rad/2));
+// Leaflet + OpenStreetMap
+function initLeafletMap(){
+  if(leafletMap || typeof L==="undefined") return;
+
+  const mapEl=document.getElementById("leafletMap");
+  if(!mapEl) return;
+
+  leafletMap=L.map(mapEl,{
+    zoomControl:true,
+    attributionControl:true,
+    preferCanvas:true
+  });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:19,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(leafletMap);
+
+  // 三角線全体が見える初期表示
+  const bounds=L.latLngBounds(stations.map(s=>[s.lat,s.lng]));
+  leafletMap.fitBounds(bounds,{padding:[24,24]});
+
+  // 駅マーカー
+  stations.forEach(s=>{
+    const stationIcon=L.divIcon({
+      className:"station-map-icon-wrap",
+      html:`<span class="station-map-dot"></span><span class="station-map-name">${s.name}</span>`,
+      iconSize:[80,28],
+      iconAnchor:[10,14]
+    });
+    L.marker([s.lat,s.lng],{icon:stationIcon,interactive:false}).addTo(leafletMap);
+  });
+
+  // 駅を結ぶ簡易路線
+  L.polyline(stations.map(s=>[s.lat,s.lng]),{
+    color:"#1676bd",
+    weight:4,
+    opacity:.7
+  }).addTo(leafletMap);
+
+  renderLeafletTrains();
 }
-function mapPercent(lat,lng){
-  const x=(lng-MAP_BBOX.west)/(MAP_BBOX.east-MAP_BBOX.west)*100;
-  const yn=mercY(MAP_BBOX.north),ys=mercY(MAP_BBOX.south),y=mercY(lat);
-  const top=(yn-y)/(yn-ys)*100;
-  return {x,top};
+
+function trainMapIcon(t){
+  const side=routeSide(t);
+  const iconSrc=side==="up"?"./assets/train-up.gif?v=33":"./assets/train-down.gif?v=33";
+  const state=t.operationalState==="出発待ち"
+    ? `出発待ち ${t.inferredDeparture||""}`.trim()
+    : t.id;
+
+  return L.divIcon({
+    className:"train-map-icon-wrap",
+    html:`<div class="train-map-marker">
+      <img src="${iconSrc}" alt="${t.id}">
+      <span>${state}</span>
+    </div>`,
+    iconSize:[74,82],
+    iconAnchor:[37,41]
+  });
 }
-function renderMapOverlay(){
-  const layer=document.getElementById("mapTrainOverlay");
-  if(!layer)return;
-  layer.innerHTML=loadedTrains.map(t=>{
-    const p=mapPercent(t.latitude,t.longitude);
-    const side=routeSide(t);
-    const icon=side==="up"?"./assets/train-up.gif?v=32":"./assets/train-down.gif?v=32";
-    return `<button class="map-gif-train" style="left:${p.x}%;top:${p.top}%;" data-train="${t.id}" title="${t.id}">
-      <img src="${icon}" alt="${t.id}">
-      <span>${t.id}</span>
-    </button>`;
-  }).join("");
-  layer.querySelectorAll("[data-train]").forEach(b=>b.addEventListener("click",()=>openTrainDetail(b.dataset.train)));
+
+function renderLeafletTrains(){
+  if(!leafletMap || typeof L==="undefined") return;
+
+  leafletTrainMarkers.forEach(m=>leafletMap.removeLayer(m));
+  leafletTrainMarkers=[];
+
+  loadedTrains.forEach(t=>{
+    const marker=L.marker([t.latitude,t.longitude],{
+      icon:trainMapIcon(t),
+      zIndexOffset:1000
+    }).addTo(leafletMap);
+
+    marker.on("click",()=>openTrainDetail(t.id));
+    leafletTrainMarkers.push(marker);
+  });
 }
 
 // timetable
@@ -220,7 +279,8 @@ async function init(){
   loadedTrains=await loadTrainData();
   renderStationGrid();
   renderDualRoute();
-  renderMapOverlay();
+  initLeafletMap();
+  renderLeafletTrains();
   renderTimetable();
   setTimeout(()=>{
     const s=document.getElementById("splashScreen");

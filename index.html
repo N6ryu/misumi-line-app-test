@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <title>三角線 リアルタイムナビ</title>
-  <link rel="stylesheet" href="./styles.css?v=32">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3yn5tMZqfMZ3uKf0efvE9n8J9Q4YQ="
+    crossorigin="">
+  <link rel="stylesheet" href="./styles.css?v=33">
 </head>
 <body class="splash-active">
   <div id="splashScreen" class="splash-screen">
@@ -85,12 +88,9 @@
             <p>OpenStreetMapを背景に、受領した緯度経度へ列車GIFを重ねています。</p>
           </div>
           <div class="external-map-shell">
-            <iframe id="osmFrame" class="osm-frame" title="OpenStreetMap 三角線地図"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=130.44%2C32.59%2C130.71%2C32.81&amp;layer=mapnik"
-              loading="lazy"></iframe>
-            <div id="mapTrainOverlay" class="map-train-overlay"></div>
+            <div id="leafletMap" class="leaflet-map" aria-label="三角線の列車位置地図"></div>
           </div>
-          <p class="map-note">※ 外部地図はOpenStreetMapを使用しています。ネットワーク環境により表示できない場合があります。</p>
+          <p class="map-note">※ OpenStreetMapを使用しています。列車アイコンは緯度・経度に直接配置されるため、拡大・縮小・移動に連動します。</p>
         </div>
       </section>
 
@@ -148,9 +148,12 @@
     <div id="sheetBody" class="sheet-body"></div>
   </section>
 
-  <script src="./mock-data.js?v=32"></script>
-  <script src="./route-geometry.js?v=32"></script>
-  <script src="./timetable-data.js?v=32"></script>
-  <script src="./app.js?v=32"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script src="./mock-data.js?v=33"></script>
+  <script src="./route-geometry.js?v=33"></script>
+  <script src="./timetable-data.js?v=33"></script>
+  <script src="./app.js?v=33"></script>
 </body>
 </html>
