@@ -19,11 +19,16 @@ function setView(i){
   navButtons.forEach((b,n)=>b.classList.toggle("active",n===currentView));
   if(currentView===0&&selectedStation)setTimeout(()=>scrollToSelectedStation(false),80);
   if(currentView===1){
-    setTimeout(()=>{
-      initLeafletMap();
-      if(leafletMap) leafletMap.invalidateSize();
-      renderLeafletTrains();
-    },120);
+    requestAnimationFrame(()=>{
+      setTimeout(()=>{
+        initLeafletMap();
+        if(leafletMap){
+          leafletMap.invalidateSize(true);
+          renderLeafletTrains();
+          setTimeout(()=>leafletMap.invalidateSize(true),250);
+        }
+      },80);
+    });
   }
   if(currentView===2){
     if(selectedStation) setTimetableStation(selectedStation);
@@ -161,10 +166,14 @@ function initLeafletMap(){
     preferCanvas:true
   });
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  const tileLayer=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
     maxZoom:19,
+    updateWhenIdle:false,
+    keepBuffer:4,
     attribution:'&copy; OpenStreetMap contributors'
   }).addTo(leafletMap);
+
+  tileLayer.on("load",()=>setTimeout(()=>leafletMap.invalidateSize(true),60));
 
   // 三角線全体が見える初期表示
   const bounds=L.latLngBounds(stations.map(s=>[s.lat,s.lng]));
@@ -235,22 +244,47 @@ function setTimetableStation(name){
 }
 function renderTimetable(){
   const data=timetableData[timetableStation]||{up:[],down:[]};
-  const byTime=new Map();
-  for(const item of data.up){
-    if(!byTime.has(item.time))byTime.set(item.time,{time:item.time,up:[],down:[]});
-    byTime.get(item.time).up.push(item.label);
+
+  const hours={};
+  for(let h=5;h<=23;h++) hours[h]={up:[],down:[]};
+
+  function pushItems(items,side){
+    for(const item of items){
+      const [hh,mm]=item.time.split(":");
+      const h=Number(hh);
+      if(!hours[h]) hours[h]={up:[],down:[]};
+      hours[h][side].push({minute:mm,label:item.label||""});
+    }
   }
-  for(const item of data.down){
-    if(!byTime.has(item.time))byTime.set(item.time,{time:item.time,up:[],down:[]});
-    byTime.get(item.time).down.push(item.label);
-  }
-  const rows=[...byTime.values()].sort((a,b)=>a.time.localeCompare(b.time));
-  document.getElementById("timetableRows").innerHTML=rows.length?rows.map(r=>`
-    <div class="tt-row">
-      <div class="tt-side up">${r.up.map(x=>`<span>${x}</span>`).join("")}</div>
-      <strong class="tt-time">${r.time}</strong>
-      <div class="tt-side down">${r.down.map(x=>`<span>${x}</span>`).join("")}</div>
-    </div>`).join(""):`<div class="tt-empty">この方向の発車列車はありません。</div>`;
+
+  pushItems(data.up,"up");
+  pushItems(data.down,"down");
+
+  const rows=Object.entries(hours)
+    .filter(([,v])=>v.up.length||v.down.length)
+    .map(([hour,v])=>`
+      <div class="hour-row">
+        <div class="minute-side up">
+          ${v.up.length ? v.up.map(x=>`
+            <div class="minute-entry" title="${x.label}">
+              <strong>${x.minute}</strong>
+              ${x.label ? `<small>${x.label}</small>` : ""}
+            </div>`).join("") : '<span class="no-train">—</span>'}
+        </div>
+
+        <div class="hour-center">${hour}</div>
+
+        <div class="minute-side down">
+          ${v.down.length ? v.down.map(x=>`
+            <div class="minute-entry" title="${x.label}">
+              <strong>${x.minute}</strong>
+              ${x.label ? `<small>${x.label}</small>` : ""}
+            </div>`).join("") : '<span class="no-train">—</span>'}
+        </div>
+      </div>`).join("");
+
+  document.getElementById("timetableRows").innerHTML=
+    rows || '<div class="tt-empty">表示できる時刻がありません。</div>';
 }
 
 function openStationModal(){
@@ -279,8 +313,6 @@ async function init(){
   loadedTrains=await loadTrainData();
   renderStationGrid();
   renderDualRoute();
-  initLeafletMap();
-  renderLeafletTrains();
   renderTimetable();
   setTimeout(()=>{
     const s=document.getElementById("splashScreen");
