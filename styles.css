@@ -306,3 +306,39 @@
   0%,100%{transform:scale(1)}
   50%{transform:scale(1.045)}
 }
+
+
+/* v31: 列車位置画面をさらにシンプル化 */
+.route-sticky-head{
+  background:rgba(255,255,255,.82);
+}
+
+/* 駅・列車スクロール領域は背景なし */
+.route-panel{
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+
+.dual-route,
+.route-node,
+.side,
+.center-station{
+  background:transparent !important;
+}
+
+/* 駅名だけは可読性確保のため極薄背景 */
+.center-station strong{
+  background:rgba(255,255,255,.45);
+}
+
+.route-node.selected .center-station strong{
+  background:rgba(255,255,255,.62);
+}
+
+/* 不要になった凡例カードは念のため非表示 */
+.position-info-card.legend-only{
+  display:none !important;
+}
