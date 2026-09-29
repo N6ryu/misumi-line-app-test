@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <title>三角線 リアルタイムナビ</title>
-  <link rel="stylesheet" href="./styles.css?v=31">
+  <link rel="stylesheet" href="./styles.css?v=32">
 </head>
 <body class="splash-active">
   <div id="splashScreen" class="splash-screen">
+    <div class="splash-bg"></div>
     <div class="splash-inner">
       <img src="./assets/splash-logo.png" class="splash-logo" alt="三角線 リアルタイムナビ">
       <p class="splash-title">三角線 リアルタイムナビ</p>
@@ -44,33 +45,25 @@
           <div class="gate-hero">
             <span class="kicker">SELECT YOUR STATION</span>
             <h2>利用する駅を選んでください</h2>
-            <p>選んだ駅を起点に、上下線の列車位置を一つの画面で確認できます。</p>
+            <p>選んだ駅を起点に、列車位置・地図・時刻表を確認できます。</p>
           </div>
 
           <section class="station-picker-card">
             <div class="picker-heading">
-              <div>
-                <span class="kicker">MISUMI LINE</span>
-                <h3>三角線 13駅</h3>
-              </div>
+              <div><span class="kicker">MISUMI LINE</span><h3>三角線 13駅</h3></div>
               <span class="tap-note">駅をタップ</span>
             </div>
             <div class="station-grid" id="stationGrid"></div>
           </section>
-
-          <p class="data-note">※ 列車位置はJR九州から提供されたサンプル2件（8031D・527D）を使用しています。</p>
         </div>
       </section>
 
       <section class="view" data-view="0" id="viewPosition">
         <div class="view-scroll position-bg" id="positionScroller">
-<section class="route-panel">
+          <section class="route-panel">
             <div class="route-sticky-head">
               <div class="section-heading">
-                <div>
-                  <span class="kicker">TRAIN POSITION</span>
-                  <h2>現在の列車位置</h2>
-                </div>
+                <div><span class="kicker">TRAIN POSITION</span><h2>現在の列車位置</h2></div>
                 <span class="sample-badge">10:28取得</span>
               </div>
               <div class="route-columns-head">
@@ -88,21 +81,39 @@
         <div class="view-scroll map-bg">
           <div class="page-title">
             <span class="kicker">MAP</span>
-            <h2>列車位置を地理的に確認</h2>
-            <p>提供された緯度経度を軽量路線図上に表示します。</p>
+            <h2>地図上の列車位置</h2>
+            <p>OpenStreetMapを背景に、受領した緯度経度へ列車GIFを重ねています。</p>
           </div>
-          <div id="map" class="map-card"></div>
+          <div class="external-map-shell">
+            <iframe id="osmFrame" class="osm-frame" title="OpenStreetMap 三角線地図"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=130.44%2C32.59%2C130.71%2C32.81&amp;layer=mapnik"
+              loading="lazy"></iframe>
+            <div id="mapTrainOverlay" class="map-train-overlay"></div>
+          </div>
+          <p class="map-note">※ 外部地図はOpenStreetMapを使用しています。ネットワーク環境により表示できない場合があります。</p>
         </div>
       </section>
 
-      <section class="view" data-view="2" id="viewTime">
+      <section class="view" data-view="2" id="viewTimetable">
         <div class="view-scroll timetable-bg">
           <div class="page-title">
-            <span class="kicker">TIMETABLE REFERENCE</span>
-            <h2>列車時刻の参照情報</h2>
-            <p>列車をタップした際の時刻表示に使用している時刻表情報です。</p>
+            <span class="kicker">TIMETABLE</span>
+            <h2>駅別時刻表</h2>
+            <p>左：上り／中央：時刻／右：下り</p>
           </div>
-          <div id="timeReference" class="time-reference"></div>
+
+          <section class="tt-panel">
+            <button type="button" id="ttStationButton" class="tt-station-button">
+              <span>表示駅</span><strong id="ttStationName">三角</strong><b>変更⌄</b>
+            </button>
+            <div class="tt-head">
+              <span>上り<br><b>熊本方面</b></span>
+              <span>時刻</span>
+              <span>下り<br><b>三角方面</b></span>
+            </div>
+            <div id="timetableRows" class="tt-rows"></div>
+          </section>
+          <p class="tt-source">JR九州「駅別時刻表」（2026年10月号掲載データ）をもとにプロトタイプへ収録しています。</p>
         </div>
       </section>
     </main>
@@ -110,13 +121,22 @@
     <nav class="bottom-nav" id="bottomNav" hidden>
       <button class="nav-btn active" data-target="0"><span class="nav-icon">🚃</span><span>列車位置</span></button>
       <button class="nav-btn" data-target="1"><span class="nav-icon">⌖</span><span>地図</span></button>
-      <button class="nav-btn" data-target="2"><span class="nav-icon">◷</span><span>時刻情報</span></button>
+      <button class="nav-btn" data-target="2"><span class="nav-icon">◷</span><span>時刻表</span></button>
     </nav>
   </div>
 
   <button type="button" class="station-fab" id="stationFab" hidden>
     <span class="fab-icon">◎</span><span>駅選択</span>
   </button>
+
+  <div class="station-modal-backdrop" id="stationModalBackdrop" hidden></div>
+  <section class="station-modal" id="stationModal" hidden>
+    <div class="station-modal-head">
+      <strong>時刻表の駅を選択</strong>
+      <button type="button" id="stationModalClose">×</button>
+    </div>
+    <div id="ttStationGrid" class="station-grid modal-grid"></div>
+  </section>
 
   <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
   <section class="bottom-sheet" id="bottomSheet" hidden>
@@ -128,8 +148,9 @@
     <div id="sheetBody" class="sheet-body"></div>
   </section>
 
-  <script src="./mock-data.js?v=31"></script>
-  <script src="./route-geometry.js?v=31"></script>
-  <script src="./app.js?v=31"></script>
+  <script src="./mock-data.js?v=32"></script>
+  <script src="./route-geometry.js?v=32"></script>
+  <script src="./timetable-data.js?v=32"></script>
+  <script src="./app.js?v=32"></script>
 </body>
 </html>
